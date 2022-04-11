@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useState } from 'react'
+import { ReactElement, useCallback, useEffect, useState } from 'react'
 import { BASE_URL, headers, method, JOKE_LIMIT } from '../util/requestConfig'
 import { Result } from '../util/types'
 import Jokes from './Jokes'
@@ -15,30 +15,52 @@ const SearchJokes = (): ReactElement => {
         setQuery(`term=${term}&page=${pageNum ?? 1}&limit=${JOKE_LIMIT}`)
     }
 
-    useEffect(() => {
-        const fetchJokes = async () => {
-            fetch(`${BASE_URL}?${query}`, { headers, method })
-                .then(async (res) => await res.json())
-                .then(
-                    (res) => {
-                        const data = res as unknown as Result
-                        if(data.status === 200) {
-                            setResult(data)
-                        } else {
-                            setResult(undefined)
-                            setError(`Error fetching jokes. Status Code: ${data.status}`)
-                        }
-                    },
-                    (error) => {
-                        console.log(error)
-                        setResult(undefined)
-                        setError(`Error fetching jokes. ${error}`)
-                    }
-                )
+    //optimized code
+    const fetchJokes = useCallback(async () => {
+        try {
+            const results = await fetch(`${BASE_URL}?${query}`, { headers, method })
+            const data = await results.json()
+            if(data && data.status === 200) {
+                setResult(data as unknown as Result)
+            } else {
+                setResult(undefined)
+                setError(`Error fetching jokes. ${data?.status ? `Status Code: ${data.status}` : ''}`)
+            }
+        } catch (error) {
+            console.log(error)
+            setResult(undefined)
+            setError(`Exception thrown while fetching jokes. ${error}`)
         }
-
-        if(query) fetchJokes()
     }, [query])
+
+    useEffect(() => {
+        if(query) fetchJokes()
+    }, [fetchJokes, query])
+
+    //original code, TODO delete this
+    // useEffect(() => {
+    //     const fetchJokes = async () => {
+    //         fetch(`${BASE_URL}?${query}`, { headers, method })
+    //             .then((res) => res.json())
+    //             .then(
+    //                 (res) => {
+    //                     if(res && res.status === 200) {
+    //                        setResult(res as unknown as Result)
+    //                    } else {
+    //                        setResult(undefined)
+    //                        setError(`Error fetching jokes. Status Code: ${res.status}`)
+    //                    }
+    //                 },
+    //                 (error) => {
+    //                     console.log(error)
+    //                     setResult(undefined)
+    //                     setError(`Error fetching jokes. ${error}`)
+    //                 }
+    //             )
+    //     }
+
+    //     if(query) fetchJokes()
+    // }, [query])
 
     return (
         <div className='h-[80vh] bg-orange-100 flex flex-col items-center justify-center font-serif'>

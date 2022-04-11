@@ -9,7 +9,7 @@
 /coverage
 
 # production
-# /build //commented this out for now, I want to add build files to git
+/build
 
 # misc
 .DS_Store
