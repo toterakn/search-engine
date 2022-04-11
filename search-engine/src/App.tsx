@@ -3,7 +3,7 @@ import SearchJokes from './components/SearchJokes'
 
 function App() {
   return (
-    <div className="text-center">
+    <div className='text-center'>
       <Header />
       <SearchJokes />
     </div>
